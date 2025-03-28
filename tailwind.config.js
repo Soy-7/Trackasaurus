@@ -1,15 +1,10 @@
+/** @type {import('tailwindcss').Config} */
 module.exports = {
-  content: ['./src/**/*.{js,ts,jsx,tsx}'],
+  content: [
+    "./src/**/*.{js,ts,jsx,tsx}", // Include all files in the src directory
+  ],
   theme: {
-    extend: {
-      colors: {
-        primary: '#ff6600', // Custom primary color
-        secondary: '#1a202c', // Custom secondary color
-      },
-      fontFamily: {
-        sans: ['Inter', 'sans-serif'], // Custom font family
-      },
-    },
+    extend: {},
   },
   plugins: [],
 };

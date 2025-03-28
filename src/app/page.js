@@ -2,6 +2,7 @@
 import React from "react";
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
+import { signUp } from "@/lib/auth";
 
 export default function LandingPage() {
   return (
