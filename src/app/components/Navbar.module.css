@@ -1,0 +1,70 @@
+.navbar {
+  display: flex;
+  justify-content: space-between; /* Space between logo, links, and button */
+  align-items: center; /* Vertically center all items */
+  padding: 2rem 2rem; /* Add padding for spacing */
+  background-color: rgba(0, 0, 0, 0.3); /* Transparent background */
+  color: white;
+  position: relative; /* Keep the navbar in its original flow */
+  top: 0;
+  left: 0; /* Ensure it starts from the left edge */
+  width: 100%; /* Full width */
+  z-index: 1000; /* Ensure it stays above other elements */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+  box-sizing: border-box; /* Include padding in width calculation */
+}
+
+.logo {
+  font-size: 1.5rem;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+.logo:hover {
+  color: #ff5722; /* Add hover effect for the logo */
+}
+
+.navLinks {
+  list-style: none;
+  display: flex;
+  gap: 1rem; /* Space between navigation links */
+  margin: 010px;
+  padding: 0;
+  position: fixed; /* Make the navigation links fixed */
+  top: 0; /* Stick to the top of the viewport */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust for centering */
+  background-color: rgba(0, 0, 0, 0.8); /* Slightly darker background for visibility */
+  padding: 2rem 1rem; /* Add padding for better spacing */
+  border-radius: 1rem; /* Rounded edges for the fixed nav */
+  z-index: 1100; /* Ensure it stays above other elements */
+}
+
+.navLinks li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1rem;
+  padding: 0.5rem 1rem;
+  transition: color 0.3s ease;
+}
+
+.navLinks li a:hover {
+  color: #ff5722; /* Orange hover effect */
+}
+
+.signupButton {
+  padding: 0.5rem 1rem; /* Adjust padding for better visibility */
+  background-color: #ff6600; /* Orange button */
+  color: white;
+  border: none;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: bold;
+  transition: background-color 0.3s ease;
+}
+
+.signupButton:hover {
+  background-color: #e55a00; /* Darker orange on hover */
+}

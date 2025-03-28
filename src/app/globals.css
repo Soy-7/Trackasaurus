@@ -1,26 +1,178 @@
-@import "tailwindcss";
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth; /* Enable smooth scrolling */
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+  background: #000000; /* Gradient background */
+  color: white;
+  overflow-x: hidden; /* Prevent horizontal scrolling */
+}
+
+/* Make the logo clickable */
+.logo {
+  font-size: 1.5em;
+  font-weight: bold;
+  color: white;
+  text-decoration: none;
+}
+
+.logo:hover {
+  color: #ff5722; /* Add hover effect for the logo */
+}
+
+/* Fixed navigation links */
+.nav-links {
+  list-style: none;
+  display: flex;
+  justify-content: center;
+  gap: 30px;
+  margin: 0;
+  padding: 10px 20px;
+  position: fixed; /* Make the navigation links fixed */
+  top: 30px; /* Keep them at the top */
+  left: 50%; /* Center horizontally */
+  transform: translateX(-50%); /* Adjust for centering */
+  background-color: rgba(
+    0,
+    0,
+    0,
+    0.8
+  ); /* Slightly darker background for visibility */
+  border-radius: 10px; /* Rounded edges for the fixed nav */
+  z-index: 1; /* Ensure it appears above other elements */
+}
+
+.nav-links li {
+  display: inline;
+}
+
+/* Navigation links styling */
+.nav-links li a {
+  color: white;
+  text-decoration: none;
+  font-size: 1em;
+  padding: 5px 10px;
+}
+
+.nav-links li a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
+  border-radius: 5px;
+}
+
+/* Header section styling */
+header {
+  text-align: match-parent;
+  padding: 20px;
+}
+
+header h1,
+header p {
+  color: white;
+}
+
+/* Style the Sign Up button */
+.cta-button {
+  display: inline-block;
+  padding: 10px 20px;
+  background-color: #ff5722;
+  color: white;
+  text-decoration: none;
+  border-radius: 5px;
+  font-size: 1em;
+}
+
+.cta-button:hover {
+  background-color: #e64a19;
+  cursor: pointer;
+}
+
+/* General section styling */
+main section {
+  padding: 50px 20px;
+  text-align: center;
+  min-height: 100vh;
+}
+
+/* Hero Section */
+.hero {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  height: 100vh; /* Full viewport height */
+  color: white;
+  position: relative;
+  z-index: 0; /* Ensure it appears above the background */
+}
+
+/* Offset the scroll position for the hero section */
+#hero {
+  scroll-margin-top: 80px; /* Adjust this value to match the height of your navbar */
+}
+
+.hero-content {
+  max-width: 800px;
+  padding: 20px;
+}
+
+.hero h1 {
+  font-size: 3em;
+  margin-bottom: 20px;
+}
+
+.hero p {
+  font-size: 1.5em;
+  margin-bottom: 30px;
+}
+
+.hero-cta {
+  font-size: 1.2em;
+  padding: 15px 30px;
+  background-color: #ff5722;
+  color: white;
+  text-decoration: none;
+  border-radius: 10px;
+  transition: background-color 0.3s ease, transform 0.3s ease;
+}
+
+.hero-cta:hover {
+  background-color: #e64a19;
+  transform: scale(1.05); /* Slight zoom effect */
+}
+
+/* Features Section */
+.features {
+  padding: 50px 20px;
+  text-align: center;
+  min-height: 100vh;
+}
+
+.featureCard {
+  background: rgba(255, 255, 255, 0.2);
+  padding: 1.5rem;
+  border-radius: 10px;
+  width: 250px;
+  text-align: center;
+  box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
+}
+
+/* About Section */
+.about {
+  padding: 50px 20px;
+  text-align: center;
+  min-height: 100vh;
+}
+
+/* Contact Section */
+.contact {
+  padding: 50px 20px;
+  text-align: center;
+  min-height: 100vh;
 }
