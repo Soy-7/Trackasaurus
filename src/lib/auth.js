@@ -1,33 +1,5 @@
 import { auth, provider } from "./firebase";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-  signInWithPopup,
-  signOut,
-  onAuthStateChanged,
-} from "firebase/auth";
-
-// Sign up with Email and Password
-export const signUpWithEmail = async (email, password) => {
-  try {
-    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
-  } catch (error) {
-    console.error("Sign Up Failed:", error);
-    throw error;
-  }
-};
-
-// Sign in with Email and Password
-export const signInWithEmail = async (email, password) => {
-  try {
-    const userCredential = await signInWithEmailAndPassword(auth, email, password);
-    return userCredential.user;
-  } catch (error) {
-    console.error("Sign In Failed:", error);
-    throw error;
-  }
-};
+import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
 
 // Sign in with Google
 export const signInWithGoogle = async () => {
@@ -36,7 +8,7 @@ export const signInWithGoogle = async () => {
     return result.user;
   } catch (error) {
     console.error("Google Sign-In Failed:", error);
-    throw error;
+    throw error; // Ensure errors are thrown for handling in the UI
   }
 };
 

@@ -32,7 +32,7 @@
     ".next/types/**/*.ts",
     "**/*.ts",
     "**/*.tsx"
-  ],
+, "src/app/signup/page.js"  ],
   "exclude": [
     "node_modules"
   ]
