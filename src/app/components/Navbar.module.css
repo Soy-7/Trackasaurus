@@ -29,14 +29,14 @@
   list-style: none;
   display: flex;
   gap: 1rem; /* Space between navigation links */
-  margin: 010px;
+  margin: 1rem;
   padding: 0;
   position: fixed; /* Make the navigation links fixed */
-  top: 0; /* Stick to the top of the viewport */
+  top: 10; /* Stick to the top of the viewport */
   left: 50%; /* Center horizontally */
   transform: translateX(-50%); /* Adjust for centering */
-  background-color: rgba(0, 0, 0, 0.8); /* Slightly darker background for visibility */
-  padding: 2rem 1rem; /* Add padding for better spacing */
+  background-color: rgba(51, 51, 51, 0.8); /* Slightly darker background for visibility */
+  padding: 0.5rem 1rem; /* Add padding for better spacing */
   border-radius: 1rem; /* Rounded edges for the fixed nav */
   z-index: 1100; /* Ensure it stays above other elements */
 }
