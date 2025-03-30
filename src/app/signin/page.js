@@ -1,8 +1,9 @@
 "use client";
 
 import { useState } from "react";
-import { signInWithGoogle } from "@/lib/auth";
 import { useRouter } from 'next/navigation';
+import { signInWithGoogle } from "@/lib/auth";
+import Link from "next/link";
 
 export default function SignInPage() {
   const [error, setError] = useState("");
@@ -14,7 +15,6 @@ export default function SignInPage() {
     setError("");
     try {
       const user = await signInWithGoogle();
-      alert(`Welcome back, ${user.displayName}!`);
       router.push('/dashboard');
     } catch (err) {
       if (err.code === "auth/popup-closed-by-user") {
@@ -28,20 +28,45 @@ export default function SignInPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
-        <h1 className="text-2xl font-bold text-gray-800 mb-6">Sign In</h1>
-        {error && <p className="text-red-500 mb-4">{error}</p>}
-        <div className="mt-6">
-          <button
-            onClick={handleGoogleSignIn}
-            className={`w-full p-3 bg-red-500 text-white rounded-lg hover:bg-red-600 ${
-              loading ? "cursor-not-allowed opacity-50" : ""
-            }`}
-            disabled={loading}
-          >
-            {loading ? "Signing In with Google..." : "Sign In with Google"}
-          </button>
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+      <div className="bg-white/90 backdrop-blur-md p-8 rounded-xl shadow-xl w-full max-w-md">
+        <div className="text-center mb-8">
+          <h1 className="text-3xl font-bold text-gray-800 mb-2">Welcome Back</h1>
+          <p className="text-gray-600">Sign in to continue to Tracko</p>
+        </div>
+        
+        {error && (
+          <div className="bg-red-100 text-red-700 p-3 rounded-lg mb-4 text-center text-sm">
+            {error}
+          </div>
+        )}
+        
+        <button
+          onClick={handleGoogleSignIn}
+          disabled={loading}
+          className="flex items-center justify-center gap-3 w-full p-3 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors duration-200 mb-6"
+        >
+          <div className="w-5 h-5 relative flex-shrink-0">
+            <img 
+              src="/google-icon.svg" 
+              alt="Google" 
+              width={20} 
+              height={20} 
+              className="w-full h-full"
+            />
+          </div>
+          <span className="text-gray-700 font-medium">
+            {loading ? "Signing in..." : "Continue with Google"}
+          </span>
+        </button>
+        
+        <div className="text-center text-sm text-gray-600">
+          <p>
+            Don't have an account?{" "}
+            <Link href="/signup" className="text-indigo-600 hover:text-indigo-800 font-medium">
+              Sign Up
+            </Link>
+          </p>
         </div>
       </div>
     </div>
