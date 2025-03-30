@@ -27,13 +27,6 @@ export default function SignUpPage() {
     }
   };
 
-  const handleSignUp = async (event) => {
-    event.preventDefault();
-    // Perform sign-up logic here
-    // On success:
-    router.push('/dashboard');
-  };
-
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-r from-blue-500 to-purple-600 px-4">
       <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md">
@@ -41,15 +34,13 @@ export default function SignUpPage() {
           <h1 className="text-3xl font-bold text-gray-800 mb-4">Welcome to Trackasaurus</h1>
           <p className="text-gray-600 mb-6">Sign up to start tracking your progress!</p>
         </div>
+        
         {error && (
           <div className="bg-red-100 text-red-700 p-3 rounded mb-4 text-center">
             {error}
           </div>
         )}
-        <form onSubmit={handleSignUp} className="signup-form">
-          {/* Sign-up form fields */}
-          <button type="submit" className="btn-primary">Sign Up</button>
-        </form>
+        
         <div className="mt-6">
           <button
             onClick={handleGoogleSignUp}
@@ -61,6 +52,7 @@ export default function SignUpPage() {
             {loading ? "Signing Up with Google..." : "Sign Up with Google"}
           </button>
         </div>
+        
         <div className="mt-6 text-center">
           <p className="text-gray-600">
             Already have an account?{" "}
