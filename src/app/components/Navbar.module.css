@@ -35,7 +35,7 @@
   top: 10; /* Stick to the top of the viewport */
   left: 50%; /* Center horizontally */
   transform: translateX(-50%); /* Adjust for centering */
-  background-color: rgba(51, 51, 51, 0.8); /* Slightly darker background for visibility */
+  background-color: rgba(0, 0, 0, 0.8); /* Slightly darker background for visibility */
   padding: 0.5rem 1rem; /* Add padding for better spacing */
   border-radius: 1rem; /* Rounded edges for the fixed nav */
   z-index: 1100; /* Ensure it stays above other elements */
@@ -50,21 +50,97 @@
 }
 
 .navLinks li a:hover {
-  color: #ff5722; /* Orange hover effect */
+  color: #ff5722; /* Orange color on hover */
 }
 
 .signupButton {
-  padding: 0.5rem 1rem; /* Adjust padding for better visibility */
-  background-color: #ff6600; /* Orange button */
+  background-color: #ff5722; /* Orange background */
   color: white;
   border: none;
+  padding: 0.75rem 1.5rem;
   border-radius: 0.5rem;
-  cursor: pointer;
-  font-size: 1rem;
   font-weight: bold;
+  cursor: pointer;
   transition: background-color 0.3s ease;
 }
 
-.signupButton:hover {
-  background-color: #e55a00; /* Darker orange on hover */
+/* Mobile layout adjustments */
+@media (max-width: 768px) {
+  .navbar {
+    flex-wrap: wrap;
+    padding: 1rem;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  /* Remove the before pseudo-element that was causing issues */
+  .navbar::before {
+    display: none;
+  }
+  
+  /* Add a new top row wrapper for logo and button */
+  .navbar::after {
+    content: "";
+    display: flex;
+    width: 100%;
+  }
+  
+  /* Logo on the left */
+  .logo {
+    flex: 0 0 auto;
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Sign up button on the right */
+  .navbar > div:last-child {
+    flex: 0 0 auto;
+    margin-left: auto;
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Fix vertical alignment between logo and button */
+  .navbar > div:first-child {
+    display: flex;
+    align-items: center;
+  }
+  
+  /* Make the first row a flex container */
+  .navbar > div:first-child,
+  .navbar > div:last-child {
+    margin-top: 0;
+    margin-bottom: 0;
+  }
+  
+  /* Navigation below */
+  .navLinks {
+    flex-basis: 100%;
+    order: 2;
+    position: static;
+    transform: none;
+    left: auto;
+    margin-top: 1rem;
+    width: 100%;
+    justify-content: center;
+    background-color: rgba(0, 0, 0, 0.6);
+  }
+}
+
+/* For very small screens */
+@media (max-width: 480px) {
+  .navLinks {
+    flex-wrap: wrap;
+  }
+  
+  .navLinks li {
+    margin: 0.25rem;
+  }
+  
+  /* Keep sign-up button properly sized */
+  .signupButton {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
 }

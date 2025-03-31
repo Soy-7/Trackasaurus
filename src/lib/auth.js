@@ -1,5 +1,5 @@
 import { auth, provider } from "./firebase";
-import { signInWithPopup, signOut, onAuthStateChanged } from "firebase/auth";
+import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
 import { setCookie, destroyCookie } from 'nookies'; // Add this import
 
 // Sign in with Google
@@ -24,17 +24,15 @@ export const signInWithGoogle = async () => {
 };
 
 // Sign out function
-export const signOutUser = async () => {
+export async function signOutUser() {
   try {
     await signOut(auth);
-    // Clear the session cookie on logout
-    destroyCookie(null, 'session', { path: '/' });
-    console.log("User signed out");
+    return true;
   } catch (error) {
-    console.error("Sign Out Failed:", error);
+    console.error("Error signing out: ", error);
     throw error;
   }
-};
+}
 
 // Track login state
 export const trackAuthState = (callback) => {

@@ -22,17 +22,19 @@
         "name": "next"
       }
     ],
-    "baseUrl": "./",
+    "baseUrl": ".",
     "paths": {
-      "@/*": ["src/*"]
+      "@/*": ["./src/*"]
     }
   },
   "include": [
     "next-env.d.ts",
     ".next/types/**/*.ts",
     "**/*.ts",
-    "**/*.tsx"
-, "src/app/signup/page.js"  ],
+    "**/*.tsx",
+    "src/app/signup/page.js",
+    "src/lib/auth.js"
+  ],
   "exclude": [
     "node_modules"
   ]

@@ -32,6 +32,15 @@
 
 html {
   scroll-behavior: smooth; /* Enable smooth scrolling */
+  height: 100%;
+  min-height: 100vh;
+  background-color: #111827; /* Same as your --gray-900 value */
+  overflow-x: hidden; /* Ensure we don't overflow horizontally */
+  width: 100%;
+  position: relative;
+  max-width: 100vw;
+  margin: 0;
+  padding: 0;
 }
 
 body {
@@ -40,7 +49,22 @@ body {
   font-family: Arial, sans-serif;
   background: #000000;
   color: white;
-  overflow-x: hidden;
+  overflow-x: hidden; /* Ensure we don't overflow horizontally */
+  height: 100%;
+  min-height: 100vh;
+  width: 100%;
+  position: relative;
+  max-width: 100vw;
+}
+
+#__next, .app {
+  min-height: 100vh;
+}
+
+/* Ensure the content fills available space */
+.min-h-screen {
+  min-height: 100vh;
+  background-color: #111827; /* Fix for black space issue after sidebar collapse */
 }
 
 /* Make the logo clickable */
@@ -67,12 +91,7 @@ body {
   top: 30px; /* Keep them at the top */
   left: 50%; /* Center horizontally */
   transform: translateX(-50%); /* Adjust for centering */
-  background-color: rgba(
-    0,
-    0,
-    0,
-    0.8
-  ); /* Slightly darker background for visibility */
+  background-color: rgba(0,0,0,0.8); /* Slightly darker background for visibility */
   border-radius: 10px; /* Rounded edges for the fixed nav */
   z-index: 1; /* Ensure it appears above other elements */
 }
@@ -92,6 +111,26 @@ body {
 .nav-links li a:hover {
   background-color: rgba(255, 255, 255, 0.2);
   border-radius: 5px;
+}
+
+/* Add styling for the active navigation link */
+.nav-anchor-link.active {
+  color: #ffffff !important; /* Use your orange highlight color */
+  font-weight: 600;
+  position: relative;
+}
+
+/* Optional: Add an underline indicator for the active link */
+.nav-anchor-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 30px;
+  height: 3px;
+  background-color: #ffffff;
+  border-radius: 2px;
 }
 
 /* Header section styling */
@@ -128,6 +167,13 @@ main section {
   min-height: 100vh;
 }
 
+main {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  box-sizing: border-box;
+}
+
 /* Hero Section */
 .hero {
   display: flex;
@@ -142,7 +188,7 @@ main section {
 
 /* Offset the scroll position for the hero section */
 #hero {
-  scroll-margin-top: 80px; /* Adjust this value to match the height of your navbar */
+  scroll-margin-top: 100px; /* Adjusted for smooth scrolling */
 }
 
 .hero-content {
@@ -191,6 +237,40 @@ main section {
   box-shadow: 0px 5px 15px rgba(0, 0, 0, 0.2);
 }
 
+@media (max-width: 768px) {
+  .flex {
+    flex-direction: column;
+  }
+  
+  .gap-8 {
+    gap: 1rem;
+  }
+  
+  .justify-center.gap-8 {
+    align-items: center;
+  }
+  
+  .featureCard {
+    width: 100%;
+    max-width: 100%;
+    margin-bottom: 1rem;
+  }
+  
+  /* Fix for hero section */
+  .hero-content {
+    width: 100%;
+    max-width: 100%;
+    padding: 1rem;
+  }
+  
+  /* Fix for forms */
+  form.max-w-lg {
+    width: 100%;
+    padding: 0 1rem;
+    box-sizing: border-box;
+  }
+}
+
 /* About Section */
 .about {
   padding: 50px 20px;
@@ -203,6 +283,30 @@ main section {
   padding: 50px 20px;
   text-align: center;
   min-height: 100vh;
+}
+
+section {
+  width: 100%;
+  max-width: 100%;
+  padding-left: 1rem;
+  padding-right: 1rem;
+  box-sizing: border-box;
+}
+
+#features, #about, #contact {
+  scroll-margin-top: 80px;
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+
+section[id] {
+  scroll-margin-top: 100px;
+  min-height: 50vh; /* Ensure sections are large enough to be detected properly */
 }
 
 :root {
@@ -352,4 +456,247 @@ main section {
   }
 
   /* More component styles with @apply */
+}
+
+/* Add these responsive fixes to your globals.css file */
+
+/* For proper mobile sizing */
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .lg\:col-span-4, .lg\:col-span-8 {
+    grid-column: span 1;
+  }
+  
+  .p-6 {
+    padding: 1rem;
+  }
+  
+  h2, h3 {
+    font-size: 90%;
+  }
+}
+
+/* Prevent content overlap on small screens */
+@media (max-width: 768px) {
+  .flex-col-reverse {
+    flex-direction: column-reverse;
+  }
+  
+  .gap-6 {
+    gap: 1rem;
+  }
+  
+  .md\:grid-cols-3 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Base responsive container */
+body, html {
+  width: 100%;
+  max-width: 100vw;
+  overflow-x: hidden;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+/* Ensure all containers respect boundaries */
+.flex, .grid, main, .container, .card, .min-h-screen, section {
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Fix paddings on small screens */
+@media (max-width: 640px) {
+  .p-6 {
+    padding: 1rem !important;
+  }
+  
+  .px-6 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .py-6 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  .gap-6 {
+    gap: 1rem !important;
+  }
+  
+  .container {
+    padding-left: 0.5rem !important;
+    padding-right: 0.5rem !important;
+  }
+}
+
+/* Improve responsive grids */
+@media (max-width: 768px) {
+  .grid-cols-1 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .md\:grid-cols-3 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .lg\:grid-cols-12 {
+    grid-template-columns: 1fr !important;
+  }
+  
+  .lg\:col-span-4, .lg\:col-span-8 {
+    grid-column: span 1 !important;
+  }
+}
+
+/* Fix for charts and data visualization */
+.chart, svg, canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Fix for tables */
+table {
+  width: 100%;
+  display: block;
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+@media (min-width: 768px) {
+  table {
+    display: table;
+    white-space: normal;
+  }
+}
+
+/* Fix for sidebar transition */
+.min-h-screen {
+  min-height: 100vh;
+  width: 100%;
+  max-width: 100%;
+  background-color: #111827;
+  transition: width 0.3s ease-in-out;
+}
+
+/* Fix for main content size */
+main.flex-1 {
+  width: 100%;
+  max-width: 100%;
+}
+
+/* Fix for cards and other containers */
+.card, .bg-gray-900, .bg-gradient-to-br {
+  max-width: 100%;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+}
+
+/* Fix any absolute positioned elements */
+.fixed, .absolute {
+  max-width: 100vw;
+}
+
+/* Ensure dropdown and popover menus don't cause overflow */
+.dropdown-menu, .popover, [data-radix-popper-content-wrapper] {
+  max-width: calc(100vw - 20px) !important;
+}
+
+/* Prevent text overflow */
+h1, h2, h3, p {
+  max-width: 100%;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+/* Fix for padding on mobile screens */
+@media (max-width: 640px) {
+  .px-6 {
+    padding-left: 1rem !important;
+    padding-right: 1rem !important;
+  }
+  
+  .py-6 {
+    padding-top: 1rem !important;
+    padding-bottom: 1rem !important;
+  }
+  
+  h1 {
+    font-size: 2rem !important;
+  }
+  
+  h2 {
+    font-size: 1.75rem !important;
+  }
+  
+  .text-4xl {
+    font-size: 1.75rem !important;
+  }
+}
+
+/* Fix for Navbar on mobile */
+.navbar {
+  width: 100%;
+  max-width: 100%;
+  padding: 0 1rem;
+  box-sizing: border-box;
+}
+
+@media (max-width: 768px) {
+  .navbar {
+    flex-direction: column;
+    padding: 1rem;
+  }
+  
+  .navbar > div:first-child {
+    margin-bottom: 1rem;
+  }
+  
+  .navbar ul {
+    background-color: rgba(0, 0, 0, 0.6) !important;
+    position: static !important;
+    transform: none !important;
+    left: auto !important;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem;
+    margin-top: 1rem;
+    border-radius: 0.5rem;
+    width: 100%;
+  }
+  
+  /* Add more spacing between navigation items on mobile */
+  .navbar ul li {
+    margin-bottom: 0.5rem;
+  }
+  
+  /* Make sections have proper scroll-margin for mobile */
+  section {
+    scroll-margin-top: 120px;
+  }
+}
+
+/* Improve scroll positioning */
+#hero, #features, #about, #contact {
+  scroll-margin-top: 80px;
+}
+
+/* Ensure the navigation links stay clickable */
+.navbar ul li a {
+  padding: 0.5rem 1rem;
+  display: inline-block;
+}
+
+/* Fix navbar links to ensure they're clickable */
+.nav-anchor-link {
+  display: inline-block;
+  cursor: pointer;
+  padding: 0.5rem 1rem;
+  position: relative;
 }
