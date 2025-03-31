@@ -19,7 +19,7 @@
     "@tailwindcss/aspect-ratio": "^0.4.2",
     "@tailwindcss/forms": "^0.5.10",
     "@tailwindcss/typography": "^0.5.16",
-    "autoprefixer": "^10.4.21",
+    "autoprefixer": "^10.4.14",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "firebase": "^9.23.0",
@@ -27,7 +27,7 @@
     "lucide-react": "^0.485.0",
     "next": "15.2.4",
     "nookies": "^2.5.2",
-    "postcss": "^8.5.3",
+    "postcss": "^8.4.23",
     "postcss-import": "^16.1.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
@@ -35,7 +35,7 @@
     "react-firebaseui": "^6.0.0",
     "recharts": "^2.15.1",
     "tailwind-merge": "^3.0.2",
-    "tailwindcss": "^4.0.17",
+    "tailwindcss": "^3.3.0",
     "tw-animate-css": "^1.2.5"
   },
   "devDependencies": {

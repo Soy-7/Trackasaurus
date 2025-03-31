@@ -340,3 +340,16 @@ main section {
     --sidebar-ring: 217.2 91.2% 59.8%;
   }
 }
+
+@layer components {
+  /* For your @apply directives */
+  .logo {
+    @apply text-xl font-bold text-white no-underline;
+  }
+  
+  .logo:hover {
+    @apply text-[#ff5722];
+  }
+
+  /* More component styles with @apply */
+}
