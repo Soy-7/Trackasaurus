@@ -3,7 +3,7 @@
   justify-content: space-between; /* Space between logo, links, and button */
   align-items: center; /* Vertically center all items */
   padding: 2rem 2rem; /* Add padding for spacing */
-  background-color: rgba(0, 0, 0, 0.3); /* Transparent background */
+  background-color: transparent; /* Transparent background */
   color: white;
   position: relative; /* Keep the navbar in its original flow */
   top: 0;
