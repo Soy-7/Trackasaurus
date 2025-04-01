@@ -700,3 +700,22 @@ h1, h2, h3, p {
   padding: 0.5rem 1rem;
   position: relative;
 }
+
+/* Fix date input overflow issues */
+input[type="date"] {
+  max-width: 100%;
+  min-width: 0;
+}
+
+/* Fix date picker popup positioning */
+::-webkit-calendar-picker-indicator {
+  background-position: right center;
+  padding-right: 0.5rem;
+  cursor: pointer;
+  opacity: 0.6;
+}
+
+/* Better input contrast in dark mode */
+.dark input {
+  color-scheme: dark;
+}
