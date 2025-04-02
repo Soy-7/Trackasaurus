@@ -10,7 +10,8 @@ import {
   addAttendanceRecord,
   updateAttendanceRecord,
   deleteAttendanceRecord,
-  updateCityProgress
+  updateCityProgress,
+  getAttendanceByDate
 } from '@/lib/firestore';
 
 export function useFirestore() {
@@ -20,23 +21,24 @@ export function useFirestore() {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Listen for auth state changes
+  // Auth state change listener
   useEffect(() => {
-    const unsubscribe = auth.onAuthStateChanged((authUser) => {
-      setUser(authUser);
-      setLoading(false);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setUser(user);
+      setLoading(user ? true : false);
     });
-
+    
     return () => unsubscribe();
   }, []);
 
-  // Listen for tasks changes
+  // Fetch tasks when user changes
   useEffect(() => {
     let unsubscribe = () => {};
     
     if (user) {
       unsubscribe = getUserTasks(user.uid, (data) => {
         setTasks(data);
+        setLoading(false);
       });
     } else {
       setTasks([]);
@@ -45,13 +47,14 @@ export function useFirestore() {
     return () => unsubscribe();
   }, [user]);
 
-  // Listen for attendance records
+  // Fetch attendance when user changes
   useEffect(() => {
     let unsubscribe = () => {};
     
     if (user) {
       unsubscribe = getAttendanceRecords(user.uid, (data) => {
         setAttendance(data);
+        setLoading(false);
       });
     } else {
       setAttendance([]);
@@ -94,12 +97,37 @@ export function useFirestore() {
   // Attendance operations
   const handleAddAttendance = async (data) => {
     if (!user) return null;
-    return addAttendanceRecord(user.uid, data);
+    
+    // Check if attendance already exists for this date
+    const existingAttendance = await getAttendanceByDate(user.uid, data.date);
+    
+    if (existingAttendance) {
+      // If exists, update it instead of creating a new one
+      return updateAttendanceRecord(user.uid, existingAttendance.id, {
+        date: data.date,
+        attendedHours: Number(data.attendedHours),
+        conductedHours: Number(data.conductedHours),
+        status: calculateAttendanceStatus(data.attendedHours, data.conductedHours)
+      });
+    }
+    
+    // Otherwise create a new record
+    return addAttendanceRecord(user.uid, {
+      ...data,
+      status: calculateAttendanceStatus(data.attendedHours, data.conductedHours)
+    });
   };
 
   const handleUpdateAttendance = async (recordId, updates) => {
     if (!user) return;
-    return updateAttendanceRecord(user.uid, recordId, updates);
+    
+    // Add attendance status to updates
+    const updatesWithStatus = {
+      ...updates,
+      status: calculateAttendanceStatus(updates.attendedHours, updates.conductedHours)
+    };
+    
+    return updateAttendanceRecord(user.uid, recordId, updatesWithStatus);
   };
 
   const handleDeleteAttendance = async (recordId) => {
@@ -107,10 +135,40 @@ export function useFirestore() {
     return deleteAttendanceRecord(user.uid, recordId);
   };
 
+  // Helper function to calculate attendance status
+  const calculateAttendanceStatus = (attended, conducted) => {
+    const attendedNum = Number(attended);
+    const conductedNum = Number(conducted);
+    
+    if (attendedNum === 0) return 'absent';
+    if (attendedNum < conductedNum) return 'partial';
+    return 'full';
+  };
+
   // City progress
   const handleUpdateCityProgress = async (progress) => {
     if (!user) return;
     return updateCityProgress(user.uid, progress);
+  };
+  
+  // Check if a specific date has attendance
+  const checkAttendanceForDate = (dateStr) => {
+    if (!attendance || !Array.isArray(attendance)) return null;
+    
+    const targetDate = new Date(dateStr);
+    targetDate.setHours(0, 0, 0, 0);
+    
+    return attendance.find(record => {
+      if (!record.date) return false;
+      
+      // Handle Firestore timestamp objects
+      const recordDate = new Date(
+        record.date.seconds ? record.date.seconds * 1000 : record.date
+      );
+      recordDate.setHours(0, 0, 0, 0);
+      
+      return recordDate.getTime() === targetDate.getTime();
+    });
   };
 
   return {
@@ -125,6 +183,7 @@ export function useFirestore() {
     addAttendance: handleAddAttendance,
     updateAttendance: handleUpdateAttendance,
     deleteAttendance: handleDeleteAttendance,
-    updateCityProgress: handleUpdateCityProgress
+    updateCityProgress: handleUpdateCityProgress,
+    checkAttendanceForDate  // New utility function
   };
 }

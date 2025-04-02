@@ -106,28 +106,104 @@ export const getAttendanceRecords = (userId, callback) => {
   });
 };
 
+// Add this new function to get attendance by date
+export const getAttendanceByDate = async (userId, dateString) => {
+  try {
+    if (!userId) throw new Error("User not authenticated");
+    
+    const attendanceRef = collection(db, `users/${userId}/attendance`);
+    const targetDate = new Date(dateString);
+    
+    // Set time to beginning of day
+    targetDate.setHours(0, 0, 0, 0);
+    
+    const startOfDay = Timestamp.fromDate(targetDate);
+    
+    // Set time to end of day
+    targetDate.setHours(23, 59, 59, 999);
+    const endOfDay = Timestamp.fromDate(targetDate);
+    
+    // Query for records on this specific date
+    const q = query(
+      attendanceRef,
+      where("date", ">=", startOfDay),
+      where("date", "<=", endOfDay)
+    );
+    
+    const querySnapshot = await getDocs(q);
+    
+    if (querySnapshot.empty) return null;
+    
+    // Return the first matching record
+    return {
+      id: querySnapshot.docs[0].id,
+      ...querySnapshot.docs[0].data()
+    };
+    
+  } catch (error) {
+    console.error("Error getting attendance by date:", error);
+    return null;
+  }
+};
+
+// Calculate attendance status
+const calculateStatus = (attended, conducted) => {
+  if (attended === 0) return 'absent';
+  if (attended < conducted) return 'partial';
+  return 'full';
+};
+
 // Add attendance record
 export const addAttendanceRecord = async (userId, attendanceData) => {
   try {
     if (!userId) throw new Error("User not authenticated");
     
     const attendanceRef = collection(db, `users/${userId}/attendance`);
+    
+    // Input validation
+    const attendedHours = Math.max(0, Number(attendanceData.attendedHours) || 0);
+    const conductedHours = Math.max(0, Number(attendanceData.conductedHours) || 0);
+    
+    if (attendedHours > conductedHours) {
+      throw new Error("Attended hours cannot exceed conducted hours");
+    }
+    
+    // Add status to the data
+    const status = calculateStatus(attendedHours, conductedHours);
+    
     const data = {
       date: Timestamp.fromDate(new Date(attendanceData.date)),
-      attendedHours: Number(attendanceData.attendedHours) || 0,
-      conductedHours: Number(attendanceData.conductedHours) || 0,
+      attendedHours: attendedHours,
+      conductedHours: conductedHours,
+      status: status,
       createdAt: serverTimestamp()
     };
     
-    // Add the attendance record
-    const docRef = await addDoc(attendanceRef, data);
+    // First check if a record already exists for this date
+    const existingRecord = await getAttendanceByDate(userId, attendanceData.date);
+    
+    let docRef;
+    
+    if (existingRecord) {
+      // If record exists, update it
+      docRef = doc(db, `users/${userId}/attendance/${existingRecord.id}`);
+      await updateDoc(docRef, {
+        ...data,
+        updatedAt: serverTimestamp()
+      });
+    } else {
+      // Otherwise, add a new record
+      docRef = await addDoc(attendanceRef, data);
+    }
     
     // Update user's overall attendance stats
     await updateAttendanceStats(userId);
     
-    return { id: docRef.id, ...data };
+    return existingRecord 
+      ? { id: existingRecord.id, ...data }
+      : { id: docRef.id, ...data };
   } catch (error) {
-    console.error("Error adding attendance:", error);
+    console.error("Error adding/updating attendance:", error);
     throw error;
   }
 };
@@ -139,7 +215,25 @@ export const updateAttendanceRecord = async (userId, recordId, updates) => {
     
     const recordRef = doc(db, `users/${userId}/attendance/${recordId}`);
     
-    const updateData = { ...updates };
+    // Input validation
+    const attendedHours = Math.max(0, Number(updates.attendedHours) || 0);
+    const conductedHours = Math.max(0, Number(updates.conductedHours) || 0);
+    
+    if (attendedHours > conductedHours) {
+      throw new Error("Attended hours cannot exceed conducted hours");
+    }
+    
+    // Calculate new status
+    const status = calculateStatus(attendedHours, conductedHours);
+    
+    const updateData = {
+      attendedHours: attendedHours,
+      conductedHours: conductedHours,
+      status: status,
+      updatedAt: serverTimestamp()
+    };
+    
+    // If date provided, update it too
     if (updates.date) {
       updateData.date = Timestamp.fromDate(new Date(updates.date));
     }
@@ -148,6 +242,8 @@ export const updateAttendanceRecord = async (userId, recordId, updates) => {
     
     // Update user's overall attendance stats
     await updateAttendanceStats(userId);
+    
+    return { success: true, id: recordId, ...updateData };
   } catch (error) {
     console.error("Error updating attendance:", error);
     throw error;

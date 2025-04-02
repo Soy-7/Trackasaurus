@@ -11,7 +11,9 @@ import {
   Calendar as CalendarIcon,
   ChevronLeft,
   ChevronRight,
-  CheckCircle
+  CheckCircle,
+  Edit,
+  Clock
 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { format, isSameDay, isSameMonth } from "date-fns";
@@ -20,7 +22,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "react-hot-toast";
-import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
+import { AlertCircle, CheckCircle2 } from "lucide-react";
 
 // Helper functions for attendance calculations
 const getCurrentMonthAttendedHours = (attendanceRecords) => {
@@ -71,7 +73,9 @@ export default function Dashboard() {
     toggleTask,
     deleteTask,
     addAttendance,
+    updateAttendance,
     deleteAttendanceRecord,
+    checkAttendanceForDate
   } = useFirestore();
 
   const [newTask, setNewTask] = useState({ text: "", dueDate: "" });
@@ -83,6 +87,8 @@ export default function Dashboard() {
   const [attendanceError, setAttendanceError] = useState('');
   const [date, setDate] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
+  const [isEditingAttendance, setIsEditingAttendance] = useState(false);
+  const [currentAttendanceId, setCurrentAttendanceId] = useState(null);
 
   // Calendar navigation functions
   const nextMonth = () => {
@@ -187,12 +193,18 @@ export default function Dashboard() {
         )}
         
         {dayAttendance && (
-          <div className="absolute bottom-1 left-1">
+          <div className="absolute bottom-1 left-1 flex items-center">
             <div 
-              className={`w-1.5 h-1.5 rounded-full 
-                ${Number(dayAttendance.attendedHours) >= Number(dayAttendance.conductedHours) 
-                  ? 'bg-green-500' : 'bg-yellow-500'}`}
+              className={`h-2 w-2 rounded-full mr-0.5
+                ${Number(dayAttendance.attendedHours) === 0 
+                  ? 'bg-red-500' // Absent
+                  : Number(dayAttendance.attendedHours) < Number(dayAttendance.conductedHours)
+                    ? 'bg-yellow-500' // Partial
+                    : 'bg-green-500'}`} // Full
             />
+            <span className="text-[0.6rem] text-gray-400">
+              {Math.round(dayAttendance.attendedHours)}/{Math.round(dayAttendance.conductedHours)}
+            </span>
           </div>
         )}
       </>
@@ -226,13 +238,90 @@ export default function Dashboard() {
     }
   };
 
-  // Handler for adding attendance record
+  // Handler for date change
+  const handleDateChange = (e) => {
+    const selectedDate = e.target.value;
+    
+    // Check if attendance exists for this date
+    const existingAttendance = checkAttendanceForDate(selectedDate);
+    
+    if (existingAttendance) {
+      // Switch to edit mode and populate the form
+      setIsEditingAttendance(true);
+      setCurrentAttendanceId(existingAttendance.id);
+      setAttendanceData({
+        date: selectedDate,
+        attendedHours: existingAttendance.attendedHours.toString(),
+        conductedHours: existingAttendance.conductedHours.toString(),
+      });
+      toast("You are editing an existing attendance record", {
+        icon: "📝",
+        style: {
+          background: "#1f2937",
+          color: "#fff",
+          border: "1px solid rgba(59, 130, 246, 0.2)"
+        }
+      });
+    } else {
+      // Reset to add mode
+      setIsEditingAttendance(false);
+      setCurrentAttendanceId(null);
+      setAttendanceData({
+        date: selectedDate,
+        attendedHours: "",
+        conductedHours: "",
+      });
+      setAttendanceError('');
+    }
+  };
+
+  // Add this function to handle input focus
+  const handleInputFocus = () => {
+    // Don't do anything if already in edit mode
+    if (isEditingAttendance) return;
+    
+    // Check if the currently selected date has an attendance record
+    const existingRecord = checkAttendanceForDate(attendanceData.date);
+    
+    if (existingRecord) {
+      // Switch to edit mode and populate form
+      setIsEditingAttendance(true);
+      setCurrentAttendanceId(existingRecord.id);
+      setAttendanceData({
+        date: attendanceData.date,
+        attendedHours: existingRecord.attendedHours.toString(),
+        conductedHours: existingRecord.conductedHours.toString(),
+      });
+      
+      toast("Editing existing attendance record", {
+        icon: "📝",
+        style: {
+          background: "#1f2937",
+          color: "#fff",
+          border: "1px solid rgba(245, 158, 11, 0.2)"
+        }
+      });
+    }
+  };
+
+  // Handler for adding or updating attendance record
   const handleAttendanceSubmit = async (e) => {
     e.preventDefault();
     
-    // First validate the hours
+    // Input validation
     const attendedHours = parseFloat(attendanceData.attendedHours);
     const conductedHours = parseFloat(attendanceData.conductedHours);
+    
+    // Basic validation
+    if (isNaN(attendedHours) || isNaN(conductedHours)) {
+      setAttendanceError('Please enter valid numbers');
+      return;
+    }
+    
+    if (attendedHours < 0 || conductedHours < 0) {
+      setAttendanceError('Hours cannot be negative');
+      return;
+    }
     
     if (attendedHours > conductedHours) {
       setAttendanceError('Attended hours cannot exceed conducted hours');
@@ -242,23 +331,60 @@ export default function Dashboard() {
     setAttendanceError('');
     
     try {
-      await addAttendance(attendanceData);
-      toast.success("Attendance recorded successfully!", {
-        icon: "✅",
-        style: {
-          background: "#1f2937",
-          color: "#fff",
-          border: "1px solid rgba(74, 222, 128, 0.2)"
+      if (isEditingAttendance && currentAttendanceId) {
+        // Update existing record
+        await updateAttendance(currentAttendanceId, {
+          date: attendanceData.date,
+          attendedHours: parseFloat(attendanceData.attendedHours),
+          conductedHours: parseFloat(attendanceData.conductedHours)
+        });
+        toast.success("Attendance updated successfully!", {
+          icon: "✓",
+          style: {
+            background: "#1f2937",
+            color: "#fff",
+            border: "1px solid rgba(74, 222, 128, 0.2)"
+          }
+        });
+      } else {
+        // Check again if record exists (for race conditions)
+        const existingRecord = checkAttendanceForDate(attendanceData.date);
+        
+        if (existingRecord) {
+          // Switch to edit mode if record found
+          setIsEditingAttendance(true);
+          setCurrentAttendanceId(existingRecord.id);
+          setAttendanceError('Attendance already exists for this date. You can edit it instead.');
+          return;
         }
-      });
+        
+        // Add new record
+        await addAttendance({
+          date: attendanceData.date,
+          attendedHours: parseFloat(attendanceData.attendedHours),
+          conductedHours: parseFloat(attendanceData.conductedHours)
+        });
+        toast.success("Attendance recorded successfully!", {
+          icon: "✅",
+          style: {
+            background: "#1f2937",
+            color: "#fff",
+            border: "1px solid rgba(74, 222, 128, 0.2)"
+          }
+        });
+      }
+      
+      // Reset the form
+      setIsEditingAttendance(false);
+      setCurrentAttendanceId(null);
       setAttendanceData({
         date: new Date().toISOString().split("T")[0],
         attendedHours: "",
         conductedHours: "",
       });
     } catch (error) {
-      toast.error("Failed to add attendance");
-      console.error("Failed to add attendance:", error);
+      toast.error(error.message || "Failed to save attendance");
+      console.error("Error saving attendance:", error);
     }
   };
 
@@ -286,6 +412,10 @@ export default function Dashboard() {
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
           className="mb-6 bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center"
+          whileHover={{ 
+            backgroundColor: "rgba(34, 197, 94, 0.15)",
+            borderColor: "rgba(34, 197, 94, 0.3)",
+          }}
         >
           <div className="bg-green-500/20 p-2 rounded-full mr-3">
             <CheckCircle size={20} className="text-green-500" />
@@ -305,12 +435,13 @@ export default function Dashboard() {
       )}
     
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
-        {/* Attendance Percentage Circle Card */}
-        <motion.div className="lg:col-span-4"
+        <motion.div 
+          className="lg:col-span-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6 }}
+          transition={{ duration: 0.5 }}
         >
+          {/* Attendance circle card */}
           <Card className="bg-gray-900/80 border-gray-800 shadow-xl h-full">
             <CardHeader>
               <CardTitle className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">
@@ -336,7 +467,7 @@ export default function Dashboard() {
                     stroke="#1F2937"
                     strokeWidth="10"
                   />
-                  <circle
+                  <motion.circle
                     cx="50" 
                     cy="50" 
                     r="40"
@@ -344,7 +475,15 @@ export default function Dashboard() {
                     stroke="url(#gradient)"
                     strokeWidth="10"
                     strokeDasharray={`${2 * Math.PI * 40}`}
-                    strokeDashoffset={2 * Math.PI * 40 * (1 - (profile?.attendancePercentage || 0) / 100)}
+                    initial={{ strokeDashoffset: 2 * Math.PI * 40 }}
+                    animate={{ 
+                      strokeDashoffset: 2 * Math.PI * 40 * (1 - (profile?.attendancePercentage || 0) / 100)
+                    }}
+                    transition={{ 
+                      duration: 0.8, 
+                      ease: "easeOut",
+                      delay: 0.3
+                    }}
                     strokeLinecap="round"
                     transform="rotate(-90 50 50)"
                   />
@@ -356,30 +495,64 @@ export default function Dashboard() {
                   </defs>
                 </svg>
                 
-                {/* Percentage text */}
+                {/* Animated percentage text */}
                 <div className="absolute inset-0 flex items-center justify-center flex-col">
-                  <span className="text-4xl font-bold">{profile?.attendancePercentage || 0}%</span>
-                  <span className="text-sm text-gray-400">Attendance</span>
+                  <motion.span 
+                    className="text-4xl font-bold"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    key={profile?.attendancePercentage || 0}
+                    transition={{ duration: 0.6, delay: 0.8 }}
+                  >
+                    {profile?.attendancePercentage || 0}%
+                  </motion.span>
+                  <motion.span 
+                    className="text-sm text-gray-400"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.6, delay: 1 }}
+                  >
+                    Attendance
+                  </motion.span>
                 </div>
               </div>
               
               {/* Details */}
-              <div className="w-full grid grid-cols-2 gap-4 mt-2">
-                <div className="bg-gray-800/50 p-3 rounded-lg border border-gray-700 flex flex-col items-center">
+              <div className="w-full grid grid-cols-2 gap-4 mt-4">
+                <motion.div 
+                  className="bg-gray-800/50 p-3 rounded-lg border border-gray-700 flex flex-col items-center"
+                  whileHover={{ 
+                    scale: 1.03, 
+                    backgroundColor: "rgba(31, 41, 55, 0.7)",
+                    transition: { duration: 0.2 } 
+                  }}
+                >
                   <p className="text-xs text-gray-400">Attended</p>
-                  <p className="text-xl font-medium">{profile?.totalAttendedHours || 0} hrs</p>
-                </div>
-                <div className="bg-gray-800/50 p-3 rounded-lg border border-gray-700 flex flex-col items-center">
+                  <p className="text-xl font-medium">{Math.round(profile?.totalAttendedHours || 0)} hrs</p>
+                </motion.div>
+                <motion.div 
+                  className="bg-gray-800/50 p-3 rounded-lg border border-gray-700 flex flex-col items-center"
+                  whileHover={{ 
+                    scale: 1.03, 
+                    backgroundColor: "rgba(31, 41, 55, 0.7)",
+                    transition: { duration: 0.2 } 
+                  }}
+                >
                   <p className="text-xs text-gray-400">Conducted</p>
-                  <p className="text-xl font-medium">{profile?.totalConductedHours || 0} hrs</p>
-                </div>
+                  <p className="text-xl font-medium">{Math.round(profile?.totalConductedHours || 0)} hrs</p>
+                </motion.div>
               </div>
             </CardContent>
           </Card>
         </motion.div>
 
-        {/* Attendance Form Component */}
-        <motion.div className="lg:col-span-4">
+        <motion.div 
+          className="lg:col-span-4"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.1 }}
+        >
+          {/* Attendance form card */}
           <Card className="bg-gray-900/80 border-gray-800 shadow-xl h-full">
             <CardHeader>
               <CardTitle className="text-xl font-bold bg-gradient-to-r from-purple-400 to-blue-400 text-transparent bg-clip-text">
@@ -391,139 +564,270 @@ export default function Dashboard() {
             </CardHeader>
             
             <CardContent>
-              <form onSubmit={handleAttendanceSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <label className="text-sm text-gray-400">Date</label>
-                  <input
-                    type="date"
-                    value={attendanceData.date}
-                    onChange={(e) => setAttendanceData({...attendanceData, date: e.target.value})}
-                    className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
-                    required
-                  />
-                </div>
-                
-                <div className="grid grid-cols-2 gap-3">
-                  <div className="space-y-2">
-                    <label className="text-sm text-gray-400 flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 text-gray-500" />
-                      Hours Attended
-                    </label>
-                    <div className="relative">
+              {isEditingAttendance ? (
+                // Edit Mode
+                <>
+                  <form onSubmit={handleAttendanceSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <div className="flex justify-between items-center">
+                        <label className="text-sm text-gray-400">Date</label>
+                        <div className="text-xs px-2 py-1 bg-amber-500/20 text-amber-400 rounded-full flex items-center gap-1">
+                          <Edit size={12} />
+                          <span>Editing</span>
+                        </div>
+                      </div>
                       <input
-                        type="number"
-                        placeholder="0"
-                        value={attendanceData.attendedHours}
-                        onChange={handleAttendedHoursChange}
-                        className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
-                          ${attendanceError 
-                            ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
-                            : 'border-gray-700'}`} 
-                        min="0"
-                        step="1"
+                        type="date"
+                        value={attendanceData.date}
+                        onChange={handleDateChange}
+                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
                         required
                       />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400 flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-gray-500" />
+                          Hours Attended
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={attendanceData.attendedHours}
+                            onChange={handleAttendedHoursChange}
+                            onFocus={handleInputFocus}
+                            className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
+                              ${attendanceError 
+                                ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
+                                : 'border-gray-700'}`} 
+                            min="0"
+                            step="1"
+                            required
+                          />
+                          {attendanceError && (
+                            <motion.div 
+                              initial={{ scale: 0.5 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                            </motion.div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400 flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-gray-500" />
+                          Hours Conducted
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={attendanceData.conductedHours}
+                            onChange={(e) => {
+                              const conductedHours = e.target.value;
+                              setAttendanceData({...attendanceData, conductedHours});
+                              
+                              if (attendanceData.attendedHours && conductedHours) {
+                                if (parseFloat(attendanceData.attendedHours) > parseFloat(conductedHours)) {
+                                  setAttendanceError('Attended hours cannot exceed conducted hours');
+                                } else {
+                                  setAttendanceError('');
+                                }
+                              }
+                            }}
+                            onFocus={handleInputFocus}
+                            className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
+                              ${attendanceError 
+                                ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
+                                : 'border-gray-700'}`}
+                            min="0"
+                            step="1"
+                            required
+                          />
+                          {attendanceError && (
+                            <motion.div 
+                              initial={{ scale: 0.5 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                            </motion.div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <AnimatePresence>
                       {attendanceError && (
                         <motion.div 
-                          initial={{ scale: 0.5 }}
-                          animate={{ scale: 1 }}
-                          className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                          className="bg-red-900/20 border border-red-500/30 rounded-md p-2 flex items-start gap-2"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          <AlertCircle className="h-4 w-4" />
+                          <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-red-200">{attendanceError}</p>
                         </motion.div>
                       )}
-                      {attendanceData.attendedHours && attendanceData.conductedHours && 
-                      parseFloat(attendanceData.attendedHours) <= parseFloat(attendanceData.conductedHours) && (
-                        <motion.div 
-                          initial={{ scale: 0.5 }}
-                          animate={{ scale: 1 }}
-                          className="absolute top-1/2 right-2 -translate-y-1/2 text-green-500"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <div className="space-y-2">
-                    <label className="text-sm text-gray-400 flex items-center gap-1.5">
-                      <Clock className="h-3.5 w-3.5 text-gray-500" />
-                      Hours Conducted
-                    </label>
-                    <div className="relative">
-                      <input
-                        type="number"
-                        placeholder="0"
-                        value={attendanceData.conductedHours}
-                        onChange={(e) => {
-                          const conductedHours = e.target.value;
-                          setAttendanceData({...attendanceData, conductedHours});
-                          
-                          if (attendanceData.attendedHours && conductedHours) {
-                            if (parseFloat(attendanceData.attendedHours) > parseFloat(conductedHours)) {
-                              setAttendanceError('Attended hours cannot exceed conducted hours');
-                            } else {
-                              setAttendanceError('');
-                            }
-                          }
+                    </AnimatePresence>
+                    
+                    <div className="flex gap-3">
+                      <button
+                        type="submit"
+                        className={`flex-1 p-2 rounded transition-all duration-300
+                          ${attendanceError 
+                            ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
+                            : 'bg-gradient-to-r from-amber-500 to-orange-500 text-white hover:shadow-lg hover:shadow-amber-500/20'}`}
+                        disabled={!!attendanceError}
+                      >
+                        {attendanceError ? 'Fix Errors to Continue' : 'Update Attendance'}
+                      </button>
+                      
+                      <button
+                        type="button"
+                        onClick={() => {
+                          setIsEditingAttendance(false);
+                          setCurrentAttendanceId(null);
+                          setAttendanceData({
+                            date: new Date().toISOString().split('T')[0],
+                            attendedHours: '',
+                            conductedHours: '',
+                          });
+                          setAttendanceError('');
                         }}
-                        className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
-                          ${attendanceError 
-                            ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
-                            : 'border-gray-700'}`}
-                        min="0"
-                        step="1"
+                        className="p-2 border border-gray-700 rounded text-gray-300 hover:bg-gray-800 transition-colors"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </form>
+                </>
+              ) : (
+                // Add Mode
+                <>
+                  <form onSubmit={handleAttendanceSubmit} className="space-y-4">
+                    <div className="space-y-2">
+                      <label className="text-sm text-gray-400">Date</label>
+                      <input
+                        type="date"
+                        value={attendanceData.date}
+                        onChange={handleDateChange}
+                        className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
                         required
                       />
+                    </div>
+                    
+                    <div className="grid grid-cols-2 gap-3">
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400 flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-gray-500" />
+                          Hours Attended
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={attendanceData.attendedHours}
+                            onChange={handleAttendedHoursChange}
+                            onFocus={handleInputFocus}
+                            className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
+                              ${attendanceError 
+                                ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
+                                : 'border-gray-700'}`} 
+                            min="0"
+                            step="1"
+                            required
+                          />
+                          {attendanceError && (
+                            <motion.div 
+                              initial={{ scale: 0.5 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                            </motion.div>
+                          )}
+                        </div>
+                      </div>
+                      
+                      <div className="space-y-2">
+                        <label className="text-sm text-gray-400 flex items-center gap-1.5">
+                          <Clock className="h-3.5 w-3.5 text-gray-500" />
+                          Hours Conducted
+                        </label>
+                        <div className="relative">
+                          <input
+                            type="number"
+                            placeholder="0"
+                            value={attendanceData.conductedHours}
+                            onChange={(e) => {
+                              const conductedHours = e.target.value;
+                              setAttendanceData({...attendanceData, conductedHours});
+                              
+                              if (attendanceData.attendedHours && conductedHours) {
+                                if (parseFloat(attendanceData.attendedHours) > parseFloat(conductedHours)) {
+                                  setAttendanceError('Attended hours cannot exceed conducted hours');
+                                } else {
+                                  setAttendanceError('');
+                                }
+                              }
+                            }}
+                            onFocus={handleInputFocus}
+                            className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
+                              ${attendanceError 
+                                ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
+                                : 'border-gray-700'}`}
+                            min="0"
+                            step="1"
+                            required
+                          />
+                          {attendanceError && (
+                            <motion.div 
+                              initial={{ scale: 0.5 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                            >
+                              <AlertCircle className="h-4 w-4" />
+                            </motion.div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <AnimatePresence>
                       {attendanceError && (
                         <motion.div 
-                          initial={{ scale: 0.5 }}
-                          animate={{ scale: 1 }}
-                          className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                          className="bg-red-900/20 border border-red-500/30 rounded-md p-2 flex items-start gap-2"
+                          initial={{ opacity: 0, y: -10 }}
+                          animate={{ opacity: 1, y: 0 }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.2 }}
                         >
-                          <AlertCircle className="h-4 w-4" />
+                          <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                          <p className="text-sm text-red-200">{attendanceError}</p>
                         </motion.div>
                       )}
-                      {attendanceData.attendedHours && attendanceData.conductedHours && 
-                      parseFloat(attendanceData.attendedHours) <= parseFloat(attendanceData.conductedHours) && (
-                        <motion.div 
-                          initial={{ scale: 0.5 }}
-                          animate={{ scale: 1 }}
-                          className="absolute top-1/2 right-2 -translate-y-1/2 text-green-500"
-                        >
-                          <CheckCircle2 className="h-4 w-4" />
-                        </motion.div>
-                      )}
-                    </div>
-                  </div>
-                </div>
-                
-                <AnimatePresence>
-                  {attendanceError && (
-                    <motion.div 
-                      className="bg-red-900/20 border border-red-500/30 rounded-md p-2 flex items-start gap-2"
-                      initial={{ opacity: 0, y: -10 }}
-                      animate={{ opacity: 1, y: 0 }}
-                      exit={{ opacity: 0, height: 0 }}
-                      transition={{ duration: 0.2 }}
+                    </AnimatePresence>
+                    
+                    <button
+                      type="submit"
+                      className={`w-full p-2 rounded mt-3 transition-all duration-300
+                        ${attendanceError 
+                          ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
+                          : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/20'}`}
+                      disabled={!!attendanceError}
                     >
-                      <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
-                      <p className="text-sm text-red-200">{attendanceError}</p>
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-                
-                <button
-                  type="submit"
-                  className={`w-full p-2 rounded mt-3 transition-all duration-300
-                    ${attendanceError 
-                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
-                      : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/20'}`}
-                  disabled={!!attendanceError}
-                >
-                  {attendanceError ? 'Fix Errors to Continue' : 'Add Attendance Record'}
-                </button>
-              </form>
+                      {attendanceError ? 'Fix Errors to Continue' : 'Add Attendance Record'}
+                    </button>
+                  </form>
+                </>
+              )}
               
               <div className="mt-4 pt-4 border-t border-gray-800">
                 <div className="flex justify-between items-center">
@@ -532,18 +836,24 @@ export default function Dashboard() {
                     {getCurrentMonthAttendancePercentage(attendance || [])}%
                   </p>
                 </div>
-                <Progress 
-                  value={getCurrentMonthAttendancePercentage(attendance || [])} 
-                  className="h-2 bg-gray-800 mt-2" 
-                />
+                <div className="h-2 bg-gray-800 mt-2 rounded overflow-hidden">
+                  <motion.div 
+                    className="h-full bg-gradient-to-r from-purple-500 to-blue-500"
+                    initial={{ width: 0 }}
+                    animate={{ 
+                      width: `${getCurrentMonthAttendancePercentage(attendance || [])}%` 
+                    }}
+                    transition={{ duration: 1.1, ease: "easeOut" }}
+                  />
+                </div>
                 <div className="grid grid-cols-2 gap-2 mt-4">
                   <div className="text-center">
                     <p className="text-xs text-gray-400">Month Attended</p>
-                    <p className="text-lg font-medium">{getCurrentMonthAttendedHours(attendance || [])}</p>
+                    <p className="text-lg font-medium">{Math.round(getCurrentMonthAttendedHours(attendance || []))} hrs</p>
                   </div>
                   <div className="text-center">
                     <p className="text-xs text-gray-400">Month Conducted</p>
-                    <p className="text-lg font-medium">{getCurrentMonthConductedHours(attendance || [])}</p>
+                    <p className="text-lg font-medium">{Math.round(getCurrentMonthConductedHours(attendance || []))} hrs</p>
                   </div>
                 </div>
               </div>
@@ -551,13 +861,13 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
-        {/* Task Component - Fix Date Input Overflow */}
         <motion.div 
           className="lg:col-span-4"
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, delay: 0.2 }}
+          transition={{ duration: 0.5, delay: 0.2 }}
         >
+          {/* Task card */}
           <Card className="bg-gray-900/80 border-gray-800 shadow-xl h-full">
             <CardHeader>
               <div className="flex justify-between items-center">
@@ -602,7 +912,17 @@ export default function Dashboard() {
               {/* Task List - Updated with overflow handling */}
               <div className="space-y-3 max-h-[280px] overflow-y-auto pr-1">
                 {tasks && tasks.length === 0 ? (
-                  <div className="text-center text-gray-500 py-4">No tasks yet</div>
+                  <motion.div 
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-8"
+                  >
+                    <svg className="mx-auto h-12 w-12 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1} d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 012 2" />
+                    </svg>
+                    <p className="mt-2 text-sm text-gray-500">No tasks yet</p>
+                    <p className="text-xs text-gray-500 mt-1">Add your first task using the form above</p>
+                  </motion.div>
                 ) : (
                   tasks && tasks.map((task) => (
                     <div
@@ -646,13 +966,13 @@ export default function Dashboard() {
           </Card>
         </motion.div>
 
-        {/* Calendar Section - Using ShadCN Calendar with improved sizing */}
         <motion.div 
           className="lg:col-span-8 col-span-12"
-          initial={{ opacity: 0, x: 20 }}
-          animate={{ opacity: 1, x: 0 }}
-          transition={{ duration: 0.6, delay: 0.3 }}
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, delay: 0.3 }}
         >
+          {/* Calendar card */}
           <Card className="bg-gray-900/80 border-gray-800 shadow-xl h-full backdrop-blur-sm">
             <CardHeader className="pb-2">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
@@ -781,11 +1101,19 @@ export default function Dashboard() {
                                   )}
                                   
                                   {dayAttendance && (
-                                    <div 
-                                      className={`h-2 w-2 rounded-full 
-                                        ${Number(dayAttendance.attendedHours) >= Number(dayAttendance.conductedHours) 
-                                          ? 'bg-green-500' : 'bg-yellow-500'}`}
-                                    />
+                                    <div className="absolute bottom-1 left-1 flex items-center">
+                                      <div 
+                                        className={`h-2 w-2 rounded-full mr-0.5
+                                          ${Number(dayAttendance.attendedHours) === 0 
+                                            ? 'bg-red-500' // Absent
+                                            : Number(dayAttendance.attendedHours) < Number(dayAttendance.conductedHours)
+                                              ? 'bg-yellow-500' // Partial
+                                              : 'bg-green-500'}`} // Full
+                                      />
+                                      <span className="text-[0.6rem] text-gray-400">
+                                        {Math.round(dayAttendance.attendedHours)}/{Math.round(dayAttendance.conductedHours)}
+                                      </span>
+                                    </div>
                                   )}
                                 </div>
                               </div>
