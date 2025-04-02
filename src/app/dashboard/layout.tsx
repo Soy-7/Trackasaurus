@@ -7,6 +7,7 @@ import { SidebarProvider, useSidebar } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/app/components/app-sidebar";
 import { MenuIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Toaster } from "react-hot-toast";
 
 // Mobile menu toggle button that appears at the top on small screens
 function MobileSidebarToggle() {
@@ -49,16 +50,21 @@ export default function DashboardLayout({ children }) {
   }
 
   return (
-    <SidebarProvider>
-      <div className="flex min-h-screen bg-gray-900 overflow-hidden w-full max-w-full">
-        <AppSidebar />
-        <div className="flex-1 flex flex-col min-h-screen relative w-full">
-          <MobileSidebarToggle />
-          <main className="flex-1 p-4 md:p-6 bg-gray-900 text-white pt-16 md:pt-6 overflow-y-auto overflow-x-hidden w-full">
-            {children}
-          </main>
-        </div>
-      </div>
-    </SidebarProvider>
+    <html lang="en">
+      <body>
+        <SidebarProvider>
+          <div className="flex min-h-screen bg-gray-900 overflow-hidden w-full max-w-full">
+            <AppSidebar />
+            <div className="flex-1 flex flex-col min-h-screen relative w-full">
+              <MobileSidebarToggle />
+              <main className="flex-1 p-4 md:p-6 bg-gray-900 text-white pt-16 md:pt-6 overflow-y-auto overflow-x-hidden w-full">
+                {children}
+              </main>
+            </div>
+          </div>
+        </SidebarProvider>
+        <Toaster position="top-right" />
+      </body>
+    </html>
   );
 }

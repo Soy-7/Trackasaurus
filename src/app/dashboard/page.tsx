@@ -10,14 +10,17 @@ import {
   Trash2,
   Calendar as CalendarIcon,
   ChevronLeft,
-  ChevronRight 
+  ChevronRight,
+  CheckCircle
 } from "lucide-react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import { format, isSameDay, isSameMonth } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
+import { toast } from "react-hot-toast";
+import { AlertCircle, CheckCircle2, Clock } from "lucide-react";
 
 // Helper functions for attendance calculations
 const getCurrentMonthAttendedHours = (attendanceRecords) => {
@@ -77,6 +80,7 @@ export default function Dashboard() {
     attendedHours: "",
     conductedHours: "",
   });
+  const [attendanceError, setAttendanceError] = useState('');
   const [date, setDate] = useState(null);
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -195,6 +199,13 @@ export default function Dashboard() {
     );
   };
 
+  const hasTodayAttendance = () => {
+    const today = new Date();
+    return attendance && attendance.some(record => 
+      record.date && isSameDay(new Date(record.date), today)
+    );
+  };
+
   // Add loading state
   if (loading) {
     return (
@@ -218,20 +229,81 @@ export default function Dashboard() {
   // Handler for adding attendance record
   const handleAttendanceSubmit = async (e) => {
     e.preventDefault();
+    
+    // First validate the hours
+    const attendedHours = parseFloat(attendanceData.attendedHours);
+    const conductedHours = parseFloat(attendanceData.conductedHours);
+    
+    if (attendedHours > conductedHours) {
+      setAttendanceError('Attended hours cannot exceed conducted hours');
+      return;
+    }
+    
+    setAttendanceError('');
+    
     try {
       await addAttendance(attendanceData);
+      toast.success("Attendance recorded successfully!", {
+        icon: "✅",
+        style: {
+          background: "#1f2937",
+          color: "#fff",
+          border: "1px solid rgba(74, 222, 128, 0.2)"
+        }
+      });
       setAttendanceData({
         date: new Date().toISOString().split("T")[0],
         attendedHours: "",
         conductedHours: "",
       });
     } catch (error) {
+      toast.error("Failed to add attendance");
       console.error("Failed to add attendance:", error);
+    }
+  };
+
+  const handleAttendedHoursChange = (e) => {
+    const attendedHours = e.target.value;
+    const conductedHours = attendanceData.conductedHours;
+    
+    setAttendanceData({...attendanceData, attendedHours});
+    
+    // Validate only if both fields have values
+    if (attendedHours && conductedHours) {
+      if (parseFloat(attendedHours) > parseFloat(conductedHours)) {
+        setAttendanceError('Attended hours cannot exceed conducted hours');
+      } else {
+        setAttendanceError('');
+      }
     }
   };
 
   return (
     <main className="p-6 bg-gray-900 text-white">
+      {/* Add this attendance confirmation banner */}
+      {hasTodayAttendance() && (
+        <motion.div 
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="mb-6 bg-green-500/10 border border-green-500/20 rounded-lg p-3 flex items-center"
+        >
+          <div className="bg-green-500/20 p-2 rounded-full mr-3">
+            <CheckCircle size={20} className="text-green-500" />
+          </div>
+          <div className="flex-1">
+            <p className="font-medium text-white">Attendance Marked Successfully!</p>
+            <p className="text-sm text-gray-300">You've already recorded your attendance for today.</p>
+          </div>
+          {/* Optional: Add a way to view today's record */}
+          <button 
+            onClick={() => setDate(new Date())} 
+            className="text-xs bg-green-500/20 hover:bg-green-500/30 text-green-400 py-1 px-3 rounded-md ml-4 transition-colors"
+          >
+            View Details
+          </button>
+        </motion.div>
+      )}
+    
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-12 gap-6">
         {/* Attendance Percentage Circle Card */}
         <motion.div className="lg:col-span-4"
@@ -333,39 +405,123 @@ export default function Dashboard() {
                 
                 <div className="grid grid-cols-2 gap-3">
                   <div className="space-y-2">
-                    <label className="text-sm text-gray-400">Hours Attended</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={attendanceData.attendedHours}
-                      onChange={(e) => setAttendanceData({...attendanceData, attendedHours: e.target.value})}
-                      className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
-                      min="0"
-                      step="0.5"
-                      required
-                    />
+                    <label className="text-sm text-gray-400 flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-gray-500" />
+                      Hours Attended
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={attendanceData.attendedHours}
+                        onChange={handleAttendedHoursChange}
+                        className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
+                          ${attendanceError 
+                            ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
+                            : 'border-gray-700'}`} 
+                        min="0"
+                        step="1"
+                        required
+                      />
+                      {attendanceError && (
+                        <motion.div 
+                          initial={{ scale: 0.5 }}
+                          animate={{ scale: 1 }}
+                          className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                        >
+                          <AlertCircle className="h-4 w-4" />
+                        </motion.div>
+                      )}
+                      {attendanceData.attendedHours && attendanceData.conductedHours && 
+                      parseFloat(attendanceData.attendedHours) <= parseFloat(attendanceData.conductedHours) && (
+                        <motion.div 
+                          initial={{ scale: 0.5 }}
+                          animate={{ scale: 1 }}
+                          className="absolute top-1/2 right-2 -translate-y-1/2 text-green-500"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                        </motion.div>
+                      )}
+                    </div>
                   </div>
                   
                   <div className="space-y-2">
-                    <label className="text-sm text-gray-400">Hours Conducted</label>
-                    <input
-                      type="number"
-                      placeholder="0"
-                      value={attendanceData.conductedHours}
-                      onChange={(e) => setAttendanceData({...attendanceData, conductedHours: e.target.value})}
-                      className="w-full p-2 bg-gray-800 border border-gray-700 rounded text-white"
-                      min="0"
-                      step="0.5"
-                      required
-                    />
+                    <label className="text-sm text-gray-400 flex items-center gap-1.5">
+                      <Clock className="h-3.5 w-3.5 text-gray-500" />
+                      Hours Conducted
+                    </label>
+                    <div className="relative">
+                      <input
+                        type="number"
+                        placeholder="0"
+                        value={attendanceData.conductedHours}
+                        onChange={(e) => {
+                          const conductedHours = e.target.value;
+                          setAttendanceData({...attendanceData, conductedHours});
+                          
+                          if (attendanceData.attendedHours && conductedHours) {
+                            if (parseFloat(attendanceData.attendedHours) > parseFloat(conductedHours)) {
+                              setAttendanceError('Attended hours cannot exceed conducted hours');
+                            } else {
+                              setAttendanceError('');
+                            }
+                          }
+                        }}
+                        className={`w-full p-2 pl-3 bg-gray-800 border rounded text-white transition-all duration-200
+                          ${attendanceError 
+                            ? 'border-red-500 shadow-[0_0_0_1px_rgba(239,68,68,0.2)]' 
+                            : 'border-gray-700'}`}
+                        min="0"
+                        step="1"
+                        required
+                      />
+                      {attendanceError && (
+                        <motion.div 
+                          initial={{ scale: 0.5 }}
+                          animate={{ scale: 1 }}
+                          className="absolute top-1/2 right-2 -translate-y-1/2 text-red-500"
+                        >
+                          <AlertCircle className="h-4 w-4" />
+                        </motion.div>
+                      )}
+                      {attendanceData.attendedHours && attendanceData.conductedHours && 
+                      parseFloat(attendanceData.attendedHours) <= parseFloat(attendanceData.conductedHours) && (
+                        <motion.div 
+                          initial={{ scale: 0.5 }}
+                          animate={{ scale: 1 }}
+                          className="absolute top-1/2 right-2 -translate-y-1/2 text-green-500"
+                        >
+                          <CheckCircle2 className="h-4 w-4" />
+                        </motion.div>
+                      )}
+                    </div>
                   </div>
                 </div>
                 
+                <AnimatePresence>
+                  {attendanceError && (
+                    <motion.div 
+                      className="bg-red-900/20 border border-red-500/30 rounded-md p-2 flex items-start gap-2"
+                      initial={{ opacity: 0, y: -10 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, height: 0 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <AlertCircle className="h-4 w-4 text-red-400 mt-0.5 flex-shrink-0" />
+                      <p className="text-sm text-red-200">{attendanceError}</p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+                
                 <button
                   type="submit"
-                  className="w-full bg-gradient-to-r from-purple-500 to-blue-500 text-white p-2 rounded mt-3"
+                  className={`w-full p-2 rounded mt-3 transition-all duration-300
+                    ${attendanceError 
+                      ? 'bg-gray-700 text-gray-400 cursor-not-allowed' 
+                      : 'bg-gradient-to-r from-purple-500 to-blue-500 text-white hover:shadow-lg hover:shadow-purple-500/20'}`}
+                  disabled={!!attendanceError}
                 >
-                  Add Attendance Record
+                  {attendanceError ? 'Fix Errors to Continue' : 'Add Attendance Record'}
                 </button>
               </form>
               

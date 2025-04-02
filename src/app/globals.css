@@ -719,3 +719,12 @@ input[type="date"] {
 .dark input {
   color-scheme: dark;
 }
+
+/* Progress bar fixes for dark mode */
+.dark .bg-primary {
+  background: linear-gradient(to right, rgb(168, 85, 247), rgb(59, 130, 246));
+}
+
+.dark [role="progressbar"] > div {
+  background: linear-gradient(to right, rgb(168, 85, 247), rgb(59, 130, 246));
+}
