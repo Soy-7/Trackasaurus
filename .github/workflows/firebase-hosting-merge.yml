@@ -15,7 +15,7 @@ jobs:
       - name: Set up Node.js v20
         uses: actions/setup-node@v3
         with:
-          node-version: 20  # Updated from 18 to 20
+          node-version: 20
       
       - name: Install dependencies
         run: npm install --legacy-peer-deps
@@ -37,3 +37,5 @@ jobs:
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_TRACKASAURUSS }}
           channelId: live
           projectId: trackasauruss
+        env:
+          FIREBASE_CLI_EXPERIMENTS: webframeworks  # Added this line
