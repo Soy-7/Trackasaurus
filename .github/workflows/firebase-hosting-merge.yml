@@ -12,10 +12,10 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       
-      - name: Set up Node.js
+      - name: Set up Node.js v20
         uses: actions/setup-node@v3
         with:
-          node-version: 18
+          node-version: 20  # Updated from 18 to 20
       
       - name: Install dependencies
         run: npm install --legacy-peer-deps
