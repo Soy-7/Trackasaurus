@@ -9,7 +9,7 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     
-    // After successful authentication, set a cookie
+    // After successful authentication, set a cookie 
     const idToken = await user.getIdToken();
     setCookie(null, 'session', idToken, {
       maxAge: 30 * 24 * 60 * 60, // 30 days
