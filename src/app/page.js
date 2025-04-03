@@ -25,7 +25,7 @@ export default function LandingPage() {
           <h2 className="text-3xl sm:text-4xl font-bold text-center mb-8">Features</h2>
           <div className="flex flex-col md:flex-row justify-center gap-4 md:gap-8 w-full max-w-6xl mx-auto">
             <div className="featureCard bg-gray-700/50 p-6 rounded-lg w-full">
-              <h3 className="text-xl font-bold mb-2">Smart Attendance</h3>
+              <h3 className="text-xl font-bold mb-2">Smart Attendance !!!</h3>
               <p>Easily track and manage your attendance in one place.</p>
             </div>
             <div className="featureCard bg-gray-700/50 p-6 rounded-lg w-full">
