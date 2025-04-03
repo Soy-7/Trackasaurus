@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  reactStrictMode: true, // Optional: Enables React Strict Mode
+  // Your existing config
+  reactStrictMode: true,
+  // Make sure output isn't set to 'export' unless you want a static site
+  // output: 'export',
 };
 
 export default nextConfig;
