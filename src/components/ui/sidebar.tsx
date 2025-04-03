@@ -134,3 +134,17 @@ export function SidebarTrigger({ className, children, ...props }) {
     </button>
   );
 }
+
+// Correct usage
+const SidebarComponent = () => {
+  const sidebar = useSidebar(); // Move hook to component level
+  
+  return (
+    <button onClick={() => {
+      // Use sidebar value here instead of calling the hook
+      sidebar.toggleCollapse();
+    }}>
+      Toggle
+    </button>
+  );
+};

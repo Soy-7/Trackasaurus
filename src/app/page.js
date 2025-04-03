@@ -54,7 +54,7 @@ export default function LandingPage() {
           <div className="max-w-lg mx-auto w-full">
             <h2 className="text-3xl sm:text-4xl font-bold text-center mb-8">Contact Us</h2>
             <p className="text-base md:text-lg text-gray-300 text-center mb-8">
-              Have questions or feedback? We'd love to hear from you!
+              Have questions or feedback? We&apos;d love to hear from you!
             </p>
             <form className="w-full mx-auto">
               <div className="mb-4">

@@ -422,7 +422,7 @@ export default function Dashboard() {
           </div>
           <div className="flex-1">
             <p className="font-medium text-white">Attendance Marked Successfully!</p>
-            <p className="text-sm text-gray-300">You've already recorded your attendance for today.</p>
+            <p className="text-sm text-gray-300">You&apos;ve already recorded your attendance for today.</p>
           </div>
           {/* Optional: Add a way to view today's record */}
           <button 

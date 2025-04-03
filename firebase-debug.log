@@ -1,0 +1,86 @@
+[debug] [2025-04-03T13:04:29.527Z] ----------------------------------------------------------------------
+[debug] [2025-04-03T13:04:29.530Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\sai_g\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2025-04-03T13:04:29.531Z] CLI Version:   14.1.0
+[debug] [2025-04-03T13:04:29.531Z] Platform:      win32
+[debug] [2025-04-03T13:04:29.531Z] Node Version:  v22.14.0
+[debug] [2025-04-03T13:04:29.531Z] Time:          Thu Apr 03 2025 18:34:29 GMT+0530 (India Standard Time)
+[debug] [2025-04-03T13:04:29.532Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-04-03T13:04:29.808Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-04-03T13:04:29.808Z] > authorizing via signed-in user (pss2k5@gmail.com)
+[debug] [2025-04-03T13:04:29.809Z] [iam] checking project trackasauruss for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-04-03T13:04:29.810Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:29.811Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:29.812Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/trackasauruss:testIamPermissions [none]
+[debug] [2025-04-03T13:04:29.812Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/trackasauruss:testIamPermissions x-goog-quota-user=projects/trackasauruss
+[debug] [2025-04-03T13:04:29.812Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/trackasauruss:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-04-03T13:04:31.180Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/trackasauruss:testIamPermissions 200
+[debug] [2025-04-03T13:04:31.180Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/trackasauruss:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-04-03T13:04:31.181Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:31.181Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:31.181Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/trackasauruss [none]
+[debug] [2025-04-03T13:04:31.810Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/trackasauruss 200
+[debug] [2025-04-03T13:04:31.810Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/trackasauruss {"projectId":"trackasauruss","projectNumber":"14265541512","displayName":"Trackasaurus","name":"projects/trackasauruss","resources":{"hostingSite":"trackasauruss"},"state":"ACTIVE","etag":"1_95e444d7-1439-4cdf-91aa-20168e894952"}
+[debug] [2025-04-03T13:04:36.098Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:36.098Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:36.098Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites pageToken=&pageSize=10
+[debug] [2025-04-03T13:04:37.089Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites 200
+[debug] [2025-04-03T13:04:37.089Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites {"sites":[{"name":"projects/trackasauruss/sites/trackasauruss","defaultUrl":"https://trackasauruss.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2025-04-03T13:04:37.090Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:37.090Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:37.091Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites 
+[debug] [2025-04-03T13:04:37.532Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites 200
+[debug] [2025-04-03T13:04:37.532Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites {"sites":[{"name":"projects/trackasauruss/sites/trackasauruss","defaultUrl":"https://trackasauruss.web.app","type":"DEFAULT_SITE"}]}
+[debug] [2025-04-03T13:04:37.533Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:37.533Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:37.533Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/trackasauruss/webApps/-/config [none]
+[debug] [2025-04-03T13:04:38.234Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/trackasauruss/webApps/-/config 200
+[debug] [2025-04-03T13:04:38.234Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/trackasauruss/webApps/-/config {"projectId":"trackasauruss","appId":"1:14265541512:web:5df496f8185d7dead7103d","storageBucket":"trackasauruss.firebasestorage.app","apiKey":"AIzaSyDgsESwCYJW7qdTSECKG-vMWesnDmV-pzw","authDomain":"trackasauruss.firebaseapp.com","messagingSenderId":"14265541512","measurementId":"G-LSWR57BY0W"}
+[info] 
+   Thank you for trying our early preview of Next.js support on Firebase Hosting.
+   During the preview, support is best-effort and breaking changes can be expected. Proceed with caution.
+   The integration is known to work with Next.js version 12 - 15.0. You may encounter errors.
+
+   Documentation: https://firebase.google.com/docs/hosting/frameworks/nextjs
+   File a bug: https://github.com/firebase/firebase-tools/issues/new?template=bug_report.md
+   Submit a feature request: https://github.com/firebase/firebase-tools/issues/new?template=feature_request.md
+
+   We'd love to learn from you. Express your interest in helping us shape the future of Firebase Hosting: https://goo.gle/41enW5X
+
+[debug] [2025-04-03T13:04:46.780Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:46.780Z] Checked if tokens are valid: true, expires at: 1743688861340
+[debug] [2025-04-03T13:04:46.780Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites/trackasauruss [none]
+[debug] [2025-04-03T13:04:47.660Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites/trackasauruss 200
+[debug] [2025-04-03T13:04:47.660Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/trackasauruss/sites/trackasauruss {"name":"projects/trackasauruss/sites/trackasauruss","defaultUrl":"https://trackasauruss.web.app","type":"DEFAULT_SITE"}
+[info]    ▲ Next.js 15.2.4
+
+[info]    - Environments: .env.local
+
+
+[info]    Creating an optimized production build ...
+
+[info]  ✓ Compiled successfully
+
+[info]    Linting and checking validity of types ...
+
+[info] 
+Failed to compile.
+
+[info] 
+./src/app/dashboard/page.tsx
+425:53  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/app/page.js
+57:45  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/app/signin/page.js
+64:16  Error: `'` can be escaped with `&apos;`, `&lsquo;`, `&#39;`, `&rsquo;`.  react/no-unescaped-entities
+
+./src/components/ui/sidebar.tsx
+68:26  Error: React Hook "useSidebar" cannot be called inside a callback. React Hooks must be called in a React function component or a custom React Hook function.  react-hooks/rules-of-hooks
+
+info  - Need to disable some ESLint rules? Learn more here: https://nextjs.org/docs/app/api-reference/config/eslint#disabling-rules
+
+[debug] [2025-04-03T13:05:22.774Z] Error: ENOENT: no such file or directory, open 'C:\Users\sai_g\Web app\tracko-next\.next\export-marker.json'
+[error] 
+[error] Error: An unexpected error has occurred.
