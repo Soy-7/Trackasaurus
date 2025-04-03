@@ -1,12 +1,25 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  // Your existing config
+  output: 'export', // Set to static export
   reactStrictMode: true,
-  // Make sure output isn't set to 'export' unless you want a static site
-  // output: 'export',
+  images: {
+    unoptimized: true, // Required for static export
+  },
   eslint: {
-    // This ignores ESLint errors during the build process
     ignoreDuringBuilds: true,
+  },
+  // Skip trying to initialize Firebase during build
+  webpack: (config) => {
+    // This tells webpack to ignore firebase imports during build
+    if (typeof window === 'undefined') {
+      config.resolve.fallback = {
+        ...config.resolve.fallback,
+        'firebase/app': false,
+        'firebase/auth': false,
+        'firebase/firestore': false,
+      };
+    }
+    return config;
   },
 };
 
