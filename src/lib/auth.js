@@ -1,7 +1,12 @@
 import { auth, provider, db } from "./firebase";
-import { signInWithPopup, onAuthStateChanged, signOut } from "firebase/auth";
+import { signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { doc, getDoc, setDoc, serverTimestamp } from "firebase/firestore";
-import { setCookie, destroyCookie } from 'nookies';
+import { setCookie, destroyCookie, parseCookies } from 'nookies';
+
+// Set Firebase persistence to LOCAL (persists even when browser is closed)
+setPersistence(auth, browserLocalPersistence).catch(error => {
+  console.error("Error setting persistence:", error);
+});
 
 // Sign in with Google
 export const signInWithGoogle = async () => {
@@ -9,8 +14,10 @@ export const signInWithGoogle = async () => {
     const result = await signInWithPopup(auth, provider);
     const user = result.user;
     
-    // After successful authentication, set a cookie 
+    // Get a longer-lived token for persistent sessions
     const idToken = await user.getIdToken();
+    
+    // Set a long-lived cookie (30 days)
     setCookie(null, 'session', idToken, {
       maxAge: 30 * 24 * 60 * 60, // 30 days
       path: '/',
@@ -31,9 +38,6 @@ export const signInWithGoogle = async () => {
         createdAt: serverTimestamp(),
         lastLogin: serverTimestamp()
       });
-      
-      // You don't need to create empty subcollections explicitly
-      // They will be created when documents are added to them
     } else {
       // Update last login time for returning users
       await setDoc(userRef, { lastLogin: serverTimestamp() }, { merge: true });
@@ -50,6 +54,8 @@ export const signInWithGoogle = async () => {
 export async function signOutUser() {
   try {
     await signOut(auth);
+    // Remove the session cookie when signing out
+    destroyCookie(null, 'session');
     return true;
   } catch (error) {
     console.error("Error signing out: ", error);
@@ -57,11 +63,43 @@ export async function signOutUser() {
   }
 }
 
+// Check if user is already authenticated
+export const checkUserAuth = () => {
+  const cookies = parseCookies();
+  return !!cookies.session;
+};
+
+// Refresh token periodically to keep session alive
+export const setupTokenRefresh = (user) => {
+  // Refresh the token every 50 minutes (Firebase tokens expire after 1 hour)
+  let refreshInterval;
+  
+  if (user) {
+    refreshInterval = setInterval(async () => {
+      try {
+        const newToken = await user.getIdToken(true);
+        setCookie(null, 'session', newToken, {
+          maxAge: 30 * 24 * 60 * 60,
+          path: '/',
+          secure: process.env.NODE_ENV !== 'development',
+          sameSite: 'strict'
+        });
+      } catch (error) {
+        console.error("Error refreshing token:", error);
+      }
+    }, 50 * 60 * 1000); // 50 minutes
+  }
+  
+  return () => {
+    if (refreshInterval) clearInterval(refreshInterval);
+  };
+};
+
 // Track login state
 export const trackAuthState = (callback) => {
   return onAuthStateChanged(auth, async (user) => {
     if (user) {
-      // Refresh the session token periodically
+      // Refresh the session token
       const idToken = await user.getIdToken(true);
       setCookie(null, 'session', idToken, {
         maxAge: 30 * 24 * 60 * 60,
@@ -69,6 +107,12 @@ export const trackAuthState = (callback) => {
         secure: process.env.NODE_ENV !== 'development',
         sameSite: 'strict'
       });
+      
+      // Setup token refresh
+      setupTokenRefresh(user);
+    } else {
+      // Clear the session cookie if no user
+      destroyCookie(null, 'session');
     }
     callback(user);
   });

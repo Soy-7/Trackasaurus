@@ -1,15 +1,26 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from 'next/navigation';
-import { signInWithGoogle } from "@/lib/auth";
+import { signInWithGoogle, checkUserAuth } from "@/lib/auth";
 import Image from "next/image";
 import Link from "next/link";
 
 export default function SignUpPage() {
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
+  const [initialAuthCheck, setInitialAuthCheck] = useState(true);
   const router = useRouter();
+
+  // Check if user is already authenticated on page load
+  useEffect(() => {
+    const isAuthenticated = checkUserAuth();
+    if (isAuthenticated) {
+      router.replace('/dashboard');
+    } else {
+      setInitialAuthCheck(false);
+    }
+  }, [router]);
 
   const handleGoogleSignUp = async () => {
     setLoading(true);
@@ -27,6 +38,15 @@ export default function SignUpPage() {
       setLoading(false);
     }
   };
+
+  // Show loading state while checking initial auth
+  if (initialAuthCheck) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-white"></div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-indigo-500 via-purple-500 to-pink-500">

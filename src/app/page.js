@@ -1,10 +1,32 @@
 "use client";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { useRouter } from 'next/navigation';
 import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
-import { signUp } from "@/lib/auth";
+import { checkUserAuth } from "@/lib/auth";
 
 export default function LandingPage() {
+  const router = useRouter();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    // Check if user is already authenticated
+    const isAuthenticated = checkUserAuth();
+    if (isAuthenticated) {
+      router.replace('/dashboard');
+    } else {
+      setLoading(false);
+    }
+  }, [router]);
+
+  if (loading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-900 to-black">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-orange-500"></div>
+      </div>
+    );
+  }
+
   return (
     <div className="overflow-x-hidden w-full max-w-full">
       <Navbar />
