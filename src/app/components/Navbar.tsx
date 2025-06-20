@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import { useEffect } from 'react';
 import styles from './Navbar.module.css';
+import Image from "next/image";
 
 const Navbar: React.FC = () => {
   useEffect(() => {
@@ -65,10 +66,15 @@ const Navbar: React.FC = () => {
   };
 
   return (
-    <nav className={`navbar w-full max-w-full overflow-hidden px-4 py-4 ${styles.navbar}`}>
-      {/* Logo - Always on the left */}
-      <div className={styles.logo}>
-        <Link href="/" className="hover:text-orange-500 transition duration-300">
+    <nav className={`navbar w-full max-w-full overflow-hidden px-4 py-4 flex items-center justify-between ${styles.navbar}`}>
+      {/* Left: Profile PNG and Logo */}
+      <div className="flex items-center gap-3">
+        <img
+          src="/images/superdino logo.png"
+          alt="Sai Shravan"
+          className="w-20 h-20 shadow-lg"
+        />
+        <Link href="/" className="logo text-xl font-bold text-white hover:text-orange-400 transition">
           Trackasaurus
         </Link>
       </div>
@@ -91,7 +97,11 @@ const Navbar: React.FC = () => {
           </a>
         </li>
         <li>
-          <a href="#contact" className="nav-anchor-link hover:text-orange-500 transition duration-300" onClick={handleNavClick}>
+          <a
+            href="#footer"
+            className="nav-anchor-link hover:text-orange-500 transition duration-300"
+            onClick={handleNavClick} // if you use a smooth scroll handler
+          >
             Contact
           </a>
         </li>
@@ -100,7 +110,7 @@ const Navbar: React.FC = () => {
       {/* Sign Up Button - Always on the right */}
       <div>
         <Link href="/signup">
-          <button className={`${styles.signupButton} hover:bg-orange-600 transition duration-300`}>
+          <button className={`${styles.signupButton} bg-gradient-to-r from-orange-400 to-pink-500 hover:text-white/80 transition duration-300`}>
             Sign Up
           </button>
         </Link>
