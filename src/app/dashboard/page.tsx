@@ -23,6 +23,8 @@ import { Calendar } from "@/components/ui/calendar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import { toast } from "react-hot-toast";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
+import { db } from "@/lib/firebase"; // your Firestore instance
+import { doc, collection, getDocs, deleteDoc, setDoc } from "firebase/firestore";
 
 // Helper functions for attendance calculations
 const getCurrentMonthAttendedHours = (attendanceRecords) => {
@@ -89,6 +91,7 @@ export default function Dashboard() {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [isEditingAttendance, setIsEditingAttendance] = useState(false);
   const [currentAttendanceId, setCurrentAttendanceId] = useState(null);
+  const [isResetting, setIsResetting] = useState(false);
 
   // Calendar navigation functions
   const nextMonth = () => {
@@ -401,6 +404,44 @@ export default function Dashboard() {
       } else {
         setAttendanceError('');
       }
+    }
+  };
+
+  const handleReset = async () => {
+    if (!user?.uid) return;
+    const confirmed = window.confirm(
+      "Are you sure you want to reset your attendance data for the new semester? This action cannot be undone."
+    );
+    if (!confirmed) return;
+
+    setIsResetting(true);
+    try {
+      // Delete all docs in /users/{uid}/attendance
+      const attendanceRef = collection(db, "users", user.uid, "attendance");
+      const attendanceSnap = await getDocs(attendanceRef);
+      const deleteAttendance = attendanceSnap.docs.map((docu) => deleteDoc(docu.ref));
+
+      // Delete all docs in /users/{uid}/logs
+      const logsRef = collection(db, "users", user.uid, "logs");
+      const logsSnap = await getDocs(logsRef);
+      const deleteLogs = logsSnap.docs.map((docu) => deleteDoc(docu.ref));
+
+      // Delete all docs in /users/{uid}/percentages
+      const percRef = collection(db, "users", user.uid, "percentages");
+      const percSnap = await getDocs(percRef);
+      const deletePerc = percSnap.docs.map((docu) => deleteDoc(docu.ref));
+
+      await Promise.all([...deleteAttendance, ...deleteLogs, ...deletePerc]);
+
+      // (Optional) Create a blank attendance doc/structure
+      // await setDoc(doc(db, "users", user.uid, "attendance", "template"), {});
+
+      toast.success("Your data has been reset for the new semester.");
+      // Optionally, trigger a UI refresh here (refetch attendance data)
+    } catch (err) {
+      toast.error("Failed to reset data. Please try again.");
+    } finally {
+      setIsResetting(false);
     }
   };
 
@@ -1213,6 +1254,17 @@ export default function Dashboard() {
             </CardContent>
           </Card>
         </motion.div>
+      </div>
+
+      {/* Reset Attendance Button - Placed at the bottom for visibility */}
+      <div className="mt-8">
+        <Button 
+          onClick={handleReset}
+          disabled={isResetting}
+          className="w-full px-5 py-3 rounded-lg bg-gradient-to-r from-orange-500 to-pink-500 text-white font-bold shadow-lg hover:scale-105 transition-all disabled:opacity-60"
+        >
+          {isResetting ? "Resetting..." : "Reset Attendance Data"}
+        </Button>
       </div>
     </main>
   );

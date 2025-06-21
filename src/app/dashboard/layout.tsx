@@ -12,14 +12,14 @@ import { Toaster } from "react-hot-toast";
 
 // Mobile menu toggle button that appears at the top on small screens
 function MobileSidebarToggle() {
-  const { toggleSidebar } = useSidebar();
+  const { toggleMobileSidebar } = useSidebar();
   
   return (
     <div className="lg:hidden w-full bg-gray-800/95 backdrop-blur fixed top-0 z-30 p-3 flex items-center border-b border-gray-700/50">
       <Button 
         variant="ghost" 
         size="sm" 
-        onClick={toggleSidebar} 
+        onClick={toggleMobileSidebar} 
         className="text-gray-400 hover:text-white"
       >
         <MenuIcon className="h-6 w-6" />

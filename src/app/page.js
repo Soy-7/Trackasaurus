@@ -73,8 +73,8 @@ export default function LandingPage() {
               <h1 className="floating text-5xl sm:text-6xl font-extrabold mb-4 bg-gradient-to-r from-orange-400 to-pink-500 text-transparent bg-clip-text animate-fade-in">
                 Trackasaurus
               </h1>
-              <p className="text-lg sm:text-2xl mb-8 text-gray-300 animate-fade-in delay-100">
-                Your modern attendance and deadline tracker
+              <p className="text-lg sm:text-2xl mb-8 text-white animate-fade-in delay-100">
+                Track attendance. Manage deadlines. Chill !
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center md:justify-start">
                 <a
@@ -87,7 +87,7 @@ export default function LandingPage() {
 <a
   href="#about"
   onClick={handleSmoothScroll("about")}
-  className="px-8 py-4 border border-orange-500 text-orange-400 rounded-lg hover:bg-orange-500/10 transition-all font-semibold text-lg"
+  className="px-8 py-4 border border-orange-500 text-orange-400 rounded-lg hover:bg-gradient-to-r from-orange-400/40 to-pink-500/40 transition-all font-semibold text-lg"
 >
   Learn More
 </a>
@@ -111,7 +111,7 @@ export default function LandingPage() {
 >
   {/* Section Heading */}
   <h2 className="text-center text-3xl sm:text-4xl font-extrabold mb-12 text-white tracking-tight">
-    <span className="inline-block px-4 py-2 bg-white/10 rounded-xl shadow-md backdrop-blur-md border border-white/20 text-orange-400 text-2xl mb-2">
+    <span className="inline-block px-4 py-2 bg-white/10 rounded-xl shadow-md backdrop-blur-md border border-white/20 text-orange-400 text-4xl mb-2">
       🔥 Features
     </span>
   </h2>
@@ -249,7 +249,7 @@ export default function LandingPage() {
 >
   {/* "About Us" label */}
   <div className="mb-4">
-    <span className="inline-block px-4 py-1 bg-white/10 text-white font-semibold rounded-full tracking-wide text-base shadow">
+    <span className="inline-block px-6 py-2 bg-white/10 text-orange-400 font-extrabold rounded-xl tracking-wide text-3xl shadow">
       About Us
     </span>
   </div>
