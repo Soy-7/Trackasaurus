@@ -25,8 +25,6 @@ import { toast } from "react-hot-toast";
 import { AlertCircle, CheckCircle2 } from "lucide-react";
 import { db } from "@/lib/firebase"; // your Firestore instance
 import { doc, collection, getDocs, deleteDoc, setDoc } from "firebase/firestore";
-import { useAuth } from "@/lib/useAuth"; // your auth hook
-
 // Helper functions for attendance calculations
 const getCurrentMonthAttendedHours = (attendanceRecords) => {
   if (!attendanceRecords || !Array.isArray(attendanceRecords)) return 0;
